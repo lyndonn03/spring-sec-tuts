@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -43,11 +44,15 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             CustomUserDetails userDetails;
             try {
                 userDetails = new ObjectMapper().readValue(request.getInputStream(), CustomUserDetails.class);
+                if(userDetails.getUsername().isEmpty()) throw new BadCredentialsException("Username must not be null.");
+                else if(userDetails.getPassword().isEmpty()) throw new BadCredentialsException("Password must not be null.");
                 return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getPassword(), new ArrayList<>())
                 );
             } catch (IOException e) {
-                throw new RuntimeException("No user found.");
+                throw new RuntimeException(e.getMessage());
+            } catch(AuthenticationException e) {
+                throw new BadCredentialsException("Account cannot be found.");
             }
     }
 
@@ -66,6 +71,13 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write(res);
 
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException failed) throws IOException, ServletException {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, failed.getMessage());
+               
     }
 
 

@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
@@ -40,8 +41,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
             
         http.addFilterBefore(authorizationFilter, UsernamePasswordAuthenticationFilter.class);
-
     }
+
 
     @Override
     @Bean
