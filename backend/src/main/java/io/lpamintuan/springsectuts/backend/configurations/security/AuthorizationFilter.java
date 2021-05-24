@@ -41,9 +41,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
         String token = null;
         Claims claims = null;
 
-        if(header != null && header.startsWith(AUTH_PREFIX)) {
-            token = header.substring(AUTH_PREFIX.length());
-        }
+        if(header != null && header.startsWith(AUTH_PREFIX)) token = header.substring(AUTH_PREFIX.length());
 
         if(token != null) claims = jwtUtils.extractAllClaims(token);
 

@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
 
 @Service
 public class JwtUtils {
@@ -24,7 +26,11 @@ public class JwtUtils {
     }
 
     public Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+        try {
+            return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+        } catch(SignatureException | MalformedJwtException e) {
+            return null;
+        }
     }
     
 }

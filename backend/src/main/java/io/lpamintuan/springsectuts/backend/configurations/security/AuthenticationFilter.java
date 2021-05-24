@@ -17,6 +17,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import io.lpamintuan.springsectuts.backend.globals.JwtUtils;
@@ -44,15 +45,16 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             CustomUserDetails userDetails;
             try {
                 userDetails = new ObjectMapper().readValue(request.getInputStream(), CustomUserDetails.class);
-                if(userDetails.getUsername().isEmpty()) throw new BadCredentialsException("Username must not be null.");
-                else if(userDetails.getPassword().isEmpty()) throw new BadCredentialsException("Password must not be null.");
-                return authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getPassword(), new ArrayList<>())
-                );
+                if(validateUserdetailsForm(userDetails))
+                    throw new CredentialsIncompleteException("Username and password must not be null");
+                else
+                    return authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDetails.getPassword(), new ArrayList<>())
+                    );
             } catch (IOException e) {
                 throw new RuntimeException(e.getMessage());
-            } catch(AuthenticationException e) {
-                throw new BadCredentialsException("Account cannot be found.");
+            } catch(BadCredentialsException e) {
+                throw new BadCredentialsException("Account cannot found.");
             }
     }
 
@@ -77,8 +79,14 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException failed) throws IOException, ServletException {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, failed.getMessage());
-               
+        
     }
 
+    public boolean validateUserdetailsForm(UserDetails userDetails) {
+        return userDetails.getUsername().isEmpty() ||
+               userDetails.getUsername().isBlank() ||
+               userDetails.getPassword().isEmpty() ||
+               userDetails.getPassword().isBlank();
+    }
 
 }
